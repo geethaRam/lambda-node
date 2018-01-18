@@ -17,8 +17,6 @@ Resources:
       AutoPublishAlias: live
       DeploymentPreference:
           Type: Linear10PercentEvery1Minute
-          Hooks:
-            PreTraffic: !Ref preTrafficHook
       Role:
         Fn::ImportValue:
           !Join ['-', [!Ref 'ProjectId', !Ref 'AWS::Region', 'LambdaTrustRole']]
@@ -28,28 +26,3 @@ Resources:
           Properties:
             Path: /
             Method: get
-    preTrafficHook:
-      Type: AWS::Serverless::Function
-         Properties:
-              Handler: preTrafficHook.handler
-              Policies:
-                - Version: "2012-10-17"
-                  Statement:
-                  - Effect: "Allow"
-                    Action:
-                      - "codedeploy:PutLifecycleEventHookExecutionStatus"
-                    Resource:
-                      !Sub 'arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ServerlessDeploymentApplication}/*'
-                - Version: "2012-10-17"
-                  Statement:
-                  - Effect: "Allow"
-                    Action:
-                      - "lambda:InvokeFunction"
-                    Resource: !Ref safeTest.Version
-              Runtime: nodejs6.10
-              FunctionName: 'CodeDeployHook_preTrafficHook'
-              DeploymentPreference:
-                Enabled: false
-              Environment:
-                Variables:
-              CurrentVersion: !Ref safeTest.Version
